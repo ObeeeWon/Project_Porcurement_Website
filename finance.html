@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ARPS | Finance Release Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; text-align: left; }
+        .bg-navy { background-color: #003366; }
+        .text-navy { color: #003366; }
+        .modal-mask { background: rgba(0, 51, 102, 0.2); backdrop-filter: blur(8px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <nav class="border-b-4 border-[#003366] sticky top-0 bg-white/95 backdrop-blur-sm z-50 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <div class="flex flex-col cursor-pointer" onclick="location.reload()">
+                <span style="font-family: 'Montserrat', sans-serif;" class="text-2xl font-black text-[#003366] leading-none tracking-tighter uppercase">Applied Research Procurement System</span>
+                <span class="text-xs font-bold text-gray-400 mt-1 tracking-widest uppercase text-left">Sydney Waterfront Campus</span>
+            </div>
+            <div class="flex gap-4">
+                <span class="text-[#003366] font-black text-sm tracking-widest uppercase border-2 border-[#003366] px-4 py-2">Portal: Manager</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <h1 class="text-5xl font-black text-navy uppercase tracking-tighter italic underline decoration-8 decoration-emerald-50">Purchase Queue</h1>
+                <p class="text-gray-400 font-medium mt-2 text-sm uppercase tracking-widest italic">Handling Manager Approval & IT Clearance</p>
+            </div>
+            <div class="bg-white border p-4 rounded-lg shadow-sm text-center min-w-[150px]">
+                <p id="pending-count" class="text-3xl font-black text-emerald-600">0</p>
+                <p class="text-[10px] font-black text-gray-400 uppercase">Action Needed</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b">
+                    <tr>
+                        <th class="p-6">Ref No.</th>
+                        <th class="p-6">Project Code</th>
+                        <th class="p-6 text-right">Total</th>
+                        <th class="p-6 text-center">Step Status</th>
+                        <th class="p-6 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="finance-table-body"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="finance-modal" class="fixed inset-0 z-[200] hidden modal-mask">
+        <div class="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl p-12 overflow-hidden flex flex-col">
+            <div class="flex justify-between items-start mb-6">
+                <div id="modal-header-info"></div>
+                <button onclick="closeModal()" class="text-4xl text-gray-200 hover:text-navy">&times;</button>
+            </div>
+            
+            <div id="modal-axis-container" class="mb-10 px-6"></div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar pr-4" id="modal-main-content"></div>
+            <div id="modal-footer-actions" class="mt-8 pt-8 border-t border-gray-100"></div>
+        </div>
+    </div>
+
+    <script>
+        let submissions = JSON.parse(localStorage.getItem('arps_records')) || [];
+        // 流程：申请人 -> 经理 (Approved) -> 财务 (Send to IT) -> IT (IT Approved) -> 财务 (Finalized)
+        const steps = ['Reviewing', 'Approved', 'Pending IT', 'IT Approved', 'Finalized'];
+
+        function renderFinanceTable() {
+            const body = document.getElementById('finance-table-body');
+            // 财务能处理的情况：1. 经理刚过(Approved) 2. IT已过(IT Approved) 3. 已完成(Finalized)
+            const tasks = submissions.filter(r => ['Approved', 'IT Approved', 'Finalized'].includes(r.status));
+            document.getElementById('pending-count').innerText = tasks.filter(t => t.status !== 'Finalized').length;
+
+            body.innerHTML = tasks.map((r) => {
+                const globalIdx = submissions.findIndex(s => s.id === r.id);
+                
+                let badge = '';
+                if (r.status === 'Approved') badge = `<span class="px-2 py-1 bg-amber-50 text-amber-600 border border-amber-100 text-[8px] font-black uppercase">MGR Approved / Initial Review</span>`;
+                if (r.status === 'IT Approved') badge = `<span class="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase italic">IT Cleared / Final Approval</span>`;
+                if (r.status === 'Finalized') badge = `<span class="px-2 py-1 bg-gray-50 text-gray-400 text-[8px] font-black uppercase">Disbursed</span>`;
+
+                return `
+                    <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="p-6 font-black text-navy">${r.id}</td>
+                        <td class="p-6 font-bold text-navy uppercase italic">${r.budgetCode || 'N/A'}</td>
+                        <td class="p-6 text-right font-mono font-black text-navy text-lg">${r.total}</td>
+                        <td class="p-6 text-center">${badge}</td>
+                        <td class="p-6 text-right">
+                            <button onclick="openFinanceModal(${globalIdx})" class="bg-navy text-white px-6 py-2 rounded-sm font-black text-[10px] uppercase transition hover:bg-black">Process</button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function openFinanceModal(index) {
+            const r = submissions[index];
+            const currentStepIdx = steps.indexOf(r.status);
+            const progressWidth = (currentStepIdx / (steps.length - 1)) * 100;
+
+            document.getElementById('modal-header-info').innerHTML = `<h2 class="text-4xl font-black text-navy uppercase italic">${r.id}</h2>`;
+
+            // Axis
+            document.getElementById('modal-axis-container').innerHTML = `
+                <div class="relative pt-6">
+                    <div class="absolute top-[34px] left-0 right-0 h-0.5 bg-gray-100"></div>
+                    <div class="absolute top-[34px] left-0 h-0.5 bg-emerald-600 transition-all duration-1000" style="width: ${progressWidth}%"></div>
+                    <div class="flex justify-between relative z-10">
+                        ${steps.map((s, i) => `<div class="flex flex-col items-center"><div class="w-4 h-4 rounded-full ${i <= currentStepIdx ? 'bg-emerald-600' : 'bg-white border-2 border-gray-100'} mb-2"></div><span class="text-[7px] font-black uppercase ${i <= currentStepIdx ? 'text-navy' : 'text-gray-300'}">${s}</span></div>`).join('')}
+                    </div>
+                </div>`;
+
+            document.getElementById('modal-main-content').innerHTML = `
+                <div class="mb-8 p-6 bg-navy text-white rounded-xl shadow-xl flex justify-between items-center">
+                    <div><p class="text-[8px] opacity-60 uppercase mb-1">Project Code</p><p class="text-2xl font-black">${r.budgetCode || 'N/A'}</p></div>
+                    <div class="font-black text-2xl">${r.total}</div>
+                </div>
+                <div class="space-y-6 text-left">
+                    ${r.items.map(item => `
+                        <div class="py-3 border-b border-gray-100 flex justify-between">
+                            <div><p class="font-black text-navy uppercase text-sm">${item.name}</p><p class="text-[10px] text-gray-400 italic">${item.vendor} | ${item.link ? `<a href="${item.link}" target="_blank" class="text-blue-500 underline">View Product</a>` : 'No Link'}</p></div>
+                            <p class="font-mono font-black text-navy">${item.sub}</p>
+                        </div>`).join('')}
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        ${Object.entries(r.attachments || {}).map(([k,v]) => `<div class="p-3 bg-gray-50 border rounded text-[9px] font-bold uppercase text-gray-500">${k}: ${v || 'N/A'}</div>`).join('')}
+                    </div>
+                </div>`;
+
+            let btnHTML = '';
+            if (r.status === 'Approved') {
+                btnHTML = `<button onclick="updateStatus(${index}, 'Pending IT')" class="w-full py-5 bg-blue-600 text-white font-black uppercase text-xs tracking-widest">Initial Audit OK: Send to IT</button>`;
+            } else if (r.status === 'IT Approved') {
+                btnHTML = `<button onclick="updateStatus(${index}, 'Finalized')" class="w-full py-5 bg-emerald-600 text-white font-black uppercase text-xs tracking-widest">Final Clearance: Release Funds</button>`;
+            } else {
+                btnHTML = `<div class="text-center p-4 bg-gray-100 text-gray-400 font-black text-[10px] uppercase border italic">Workflow Completed</div>`;
+            }
+            document.getElementById('modal-footer-actions').innerHTML = btnHTML;
+            document.getElementById('finance-modal').classList.remove('hidden');
+        }
+
+        function updateStatus(idx, status) {
+            submissions[idx].status = status;
+            submissions[idx].logs.push({time: new Date().toLocaleString(), user: 'FINANCE', action: status});
+            localStorage.setItem('arps_records', JSON.stringify(submissions));
+            renderFinanceTable(); closeModal();
+        }
+
+        function closeModal() { document.getElementById('finance-modal').classList.add('hidden'); }
+        renderFinanceTable();
+    </script>
+</body>
+</html>
