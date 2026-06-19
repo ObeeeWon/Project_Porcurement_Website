@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "procurement",
+  "compatibility_date": "2026-06-01",
+  "pages_build_output_dir": "./public",
+  "d1_databases": [
+    {
+      "binding": "PROCUREMENT_DB",
+      "database_name": "procurement_db",
+      "database_id": "dc5a2afa-7d9e-4d43-8f1d-87325b132fe0"
+    }
+  ]
+}

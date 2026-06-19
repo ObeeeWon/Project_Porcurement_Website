@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARPS | Finance Release Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Montserrat:wght@800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; text-align: left; }
         .bg-navy { background-color: #003366; }
@@ -17,12 +19,12 @@
 
     <nav class="border-b-4 border-[#003366] sticky top-0 bg-white/95 backdrop-blur-sm z-50 py-6">
         <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
-            <div class="flex flex-col cursor-pointer" onclick="location.reload()">
+            <a href="index.html" class="flex flex-col cursor-pointer">
                 <span style="font-family: 'Montserrat', sans-serif;" class="text-2xl font-black text-[#003366] leading-none tracking-tighter uppercase">Applied Research Procurement System</span>
                 <span class="text-xs font-bold text-gray-400 mt-1 tracking-widest uppercase text-left">Sydney Waterfront Campus</span>
-            </div>
+            </a>
             <div class="flex gap-4">
-                <span class="text-[#003366] font-black text-sm tracking-widest uppercase border-2 border-[#003366] px-4 py-2">Portal: Manager</span>
+                <span class="text-[#003366] font-black text-sm tracking-widest uppercase border-2 border-[#003366] px-4 py-2">Portal: Finance</span>
             </div>
         </div>
     </nav>
@@ -31,7 +33,7 @@
         <div class="flex justify-between items-end mb-10">
             <div>
                 <h1 class="text-5xl font-black text-navy uppercase tracking-tighter italic underline decoration-8 decoration-emerald-50">Purchase Queue</h1>
-                <p class="text-gray-400 font-medium mt-2 text-sm uppercase tracking-widest italic">Handling Manager Approval & IT Clearance</p>
+                <p class="text-gray-400 font-medium mt-2 text-sm uppercase tracking-widest italic">Handling Manager Approval &amp; IT Clearance</p>
             </div>
             <div class="bg-white border p-4 rounded-lg shadow-sm text-center min-w-[150px]">
                 <p id="pending-count" class="text-3xl font-black text-emerald-600">0</p>
@@ -39,8 +41,8 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full text-left">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+            <table class="w-full text-left min-w-[680px]">
                 <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b">
                     <tr>
                         <th class="p-6">Ref No.</th>
@@ -61,27 +63,34 @@
                 <div id="modal-header-info"></div>
                 <button onclick="closeModal()" class="text-4xl text-gray-200 hover:text-navy">&times;</button>
             </div>
-            
             <div id="modal-axis-container" class="mb-10 px-6"></div>
             <div class="flex-1 overflow-y-auto custom-scrollbar pr-4" id="modal-main-content"></div>
             <div id="modal-footer-actions" class="mt-8 pt-8 border-t border-gray-100"></div>
         </div>
     </div>
 
+    <script src="js/api.js"></script>
     <script>
-        let submissions = JSON.parse(localStorage.getItem('arps_records')) || [];
-        // 流程：申请人 -> 经理 (Approved) -> 财务 (Send to IT) -> IT (IT Approved) -> 财务 (Finalized)
+        let submissions = [];
         const steps = ['Reviewing', 'Approved', 'Pending IT', 'IT Approved', 'Finalized'];
+
+        async function loadSubmissions() {
+            try { submissions = await ARPS.getRequests(); } catch { submissions = []; }
+            renderFinanceTable();
+        }
 
         function renderFinanceTable() {
             const body = document.getElementById('finance-table-body');
-            // 财务能处理的情况：1. 经理刚过(Approved) 2. IT已过(IT Approved) 3. 已完成(Finalized)
             const tasks = submissions.filter(r => ['Approved', 'IT Approved', 'Finalized'].includes(r.status));
             document.getElementById('pending-count').innerText = tasks.filter(t => t.status !== 'Finalized').length;
 
+            if (tasks.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" class="p-32 text-center text-gray-300 font-black uppercase text-xs italic opacity-50">Nothing to disburse</td></tr>`;
+                return;
+            }
+
             body.innerHTML = tasks.map((r) => {
                 const globalIdx = submissions.findIndex(s => s.id === r.id);
-                
                 let badge = '';
                 if (r.status === 'Approved') badge = `<span class="px-2 py-1 bg-amber-50 text-amber-600 border border-amber-100 text-[8px] font-black uppercase">MGR Approved / Initial Review</span>`;
                 if (r.status === 'IT Approved') badge = `<span class="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase italic">IT Cleared / Final Approval</span>`;
@@ -107,7 +116,6 @@
 
             document.getElementById('modal-header-info').innerHTML = `<h2 class="text-4xl font-black text-navy uppercase italic">${r.id}</h2>`;
 
-            // Axis
             document.getElementById('modal-axis-container').innerHTML = `
                 <div class="relative pt-6">
                     <div class="absolute top-[34px] left-0 right-0 h-0.5 bg-gray-100"></div>
@@ -128,16 +136,17 @@
                             <div><p class="font-black text-navy uppercase text-sm">${item.name}</p><p class="text-[10px] text-gray-400 italic">${item.vendor} | ${item.link ? `<a href="${item.link}" target="_blank" class="text-blue-500 underline">View Product</a>` : 'No Link'}</p></div>
                             <p class="font-mono font-black text-navy">${item.sub}</p>
                         </div>`).join('')}
+                    ${r.fee > 0 ? `<div class="text-[11px] font-bold text-amber-700 italic">Additional Fee: $${Number(r.fee).toFixed(2)} — ${r.notes || ''}</div>` : ''}
                     <div class="grid grid-cols-2 gap-4 mt-4">
-                        ${Object.entries(r.attachments || {}).map(([k,v]) => `<div class="p-3 bg-gray-50 border rounded text-[9px] font-bold uppercase text-gray-500">${k}: ${v || 'N/A'}</div>`).join('')}
+                        ${Object.entries(r.attachments || {}).map(([k, v]) => `<div class="p-3 bg-gray-50 border rounded text-[9px] font-bold uppercase text-gray-500">${k}: ${v || 'N/A'}</div>`).join('')}
                     </div>
                 </div>`;
 
             let btnHTML = '';
             if (r.status === 'Approved') {
-                btnHTML = `<button onclick="updateStatus(${index}, 'Pending IT')" class="w-full py-5 bg-blue-600 text-white font-black uppercase text-xs tracking-widest">Initial Audit OK: Send to IT</button>`;
+                btnHTML = `<button onclick="updateStatus(${index}, 'Pending IT', 'Initial audit OK: sent to IT')" class="w-full py-5 bg-blue-600 text-white font-black uppercase text-xs tracking-widest">Initial Audit OK: Send to IT</button>`;
             } else if (r.status === 'IT Approved') {
-                btnHTML = `<button onclick="updateStatus(${index}, 'Finalized')" class="w-full py-5 bg-emerald-600 text-white font-black uppercase text-xs tracking-widest">Final Clearance: Release Funds</button>`;
+                btnHTML = `<button onclick="updateStatus(${index}, 'Finalized', 'Funds released')" class="w-full py-5 bg-emerald-600 text-white font-black uppercase text-xs tracking-widest">Final Clearance: Release Funds</button>`;
             } else {
                 btnHTML = `<div class="text-center p-4 bg-gray-100 text-gray-400 font-black text-[10px] uppercase border italic">Workflow Completed</div>`;
             }
@@ -145,15 +154,19 @@
             document.getElementById('finance-modal').classList.remove('hidden');
         }
 
-        function updateStatus(idx, status) {
-            submissions[idx].status = status;
-            submissions[idx].logs.push({time: new Date().toLocaleString(), user: 'FINANCE', action: status});
-            localStorage.setItem('arps_records', JSON.stringify(submissions));
-            renderFinanceTable(); closeModal();
+        async function updateStatus(idx, status, action) {
+            const r = submissions[idx];
+            try {
+                await ARPS.updateRequest(r.id, { status, user: 'FINANCE', action });
+                await loadSubmissions();
+                closeModal();
+            } catch (e) {
+                alert('Update failed: ' + e.message);
+            }
         }
 
         function closeModal() { document.getElementById('finance-modal').classList.add('hidden'); }
-        renderFinanceTable();
+        loadSubmissions();
     </script>
 </body>
 </html>

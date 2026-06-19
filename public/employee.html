@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARPS | Sydney Waterfront Campus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1a1a1a; text-align: left; background-color: #fcfcfc; }
+        .font-nscc-title { font-family: 'Montserrat', sans-serif; }
+        .bg-navy { background-color: #003366; }
+        .text-navy { color: #003366; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .lvl-1-active { border-color: #475569 !important; border-width: 3px; background-color: #f8fafc !important; color: #1e293b !important; opacity: 1 !important; }
+        .lvl-2-active { border-color: #2563eb !important; border-width: 3px; background-color: #eff6ff !important; color: #1e40af !important; opacity: 1 !important; }
+        .lvl-3-active { border-color: #d97706 !important; border-width: 3px; background-color: #fffbeb !important; color: #92400e !important; opacity: 1 !important; }
+        .lvl-4-active { border-color: #dc2626 !important; border-width: 3px; background-color: #fef2f2 !important; color: #991b1b !important; opacity: 1 !important; }
+        .price-input-box { width: 110px !important; }
+    </style>
+</head>
+<body class="bg-white">
+
+    <nav class="border-b-4 border-navy sticky top-0 bg-white/95 backdrop-blur-sm z-50 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center flex-wrap gap-4">
+            <a href="index.html" class="flex flex-col cursor-pointer">
+                <span class="font-nscc-title text-2xl font-black text-navy leading-none tracking-tighter uppercase">Applied Research Procurement System</span>
+                <span class="text-[10px] font-bold text-gray-400 mt-2 tracking-[0.2em] uppercase">Sydney Waterfront Campus</span>
+            </a>
+            <div class="flex gap-4 items-center">
+                <button onclick="initiateRequest('Goods')" class="bg-navy text-white px-8 py-3 rounded-sm font-bold text-sm tracking-widest hover:bg-black transition uppercase">Purchase Goods</button>
+                <button onclick="initiateRequest('Services')" class="border-2 border-navy text-navy px-8 py-3 rounded-sm font-bold text-sm tracking-widest hover:bg-navy hover:text-white transition uppercase">Purchase Services</button>
+                <button onclick="showTab('records')" class="text-navy font-bold text-sm tracking-widest px-4 py-3 border-l-2 ml-4 uppercase">Records</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="guidelines-tab" class="tab-content active max-w-7xl mx-auto px-6 py-20">
+        <div class="mb-16 border-l-8 border-navy pl-8 flex justify-between items-end flex-wrap gap-4">
+            <div>
+                <h1 class="text-4xl font-black tracking-tighter text-navy mb-2 uppercase italic font-nscc-title">Procurement Policy 2026</h1>
+                <p class="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px] italic">Institutional Compliance Framework</p>
+            </div>
+            <div class="flex gap-3 text-[10px] font-black uppercase">
+                <a href="vendors.html" class="px-4 py-2 border-2 border-navy text-navy hover:bg-navy hover:text-white transition tracking-widest">NSCC Vendor List</a>
+                <a href="vendor-register.html" class="px-4 py-2 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white transition tracking-widest">Vendor Registration Form</a>
+            </div>
+        </div>
+
+        <div class="space-y-24">
+            <div>
+                <h3 class="text-xl font-black text-blue-800 uppercase mb-8 flex items-center gap-4">Goods Procurement <span class="flex-1 h-[1px] bg-blue-100"></span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-left">
+                    <div class="p-8 border-2 border-slate-400 bg-slate-50"><p class="text-[9px] font-black text-slate-500 uppercase mb-3 font-bold">Level 1</p><p class="text-2xl font-black text-slate-800">$0 - $1k</p><p class="text-[9px] font-bold text-slate-400 mt-4 uppercase italic">Direct Approval</p></div>
+                    <div class="p-8 border-2 border-blue-400 bg-blue-50"><p class="text-[9px] font-black text-blue-600 uppercase mb-3 font-bold">Level 2</p><p class="text-2xl font-black text-blue-800">$1k - $2.5k</p><p class="text-[9px] font-bold text-blue-500 mt-4 uppercase italic">DPO Required</p></div>
+                    <div class="p-8 border-2 border-amber-500 bg-amber-50"><p class="text-[9px] font-black text-amber-600 uppercase mb-3 font-bold">Level 3</p><p class="text-2xl font-black text-amber-800">$2.5k - $5k</p><p class="text-[9px] font-bold text-amber-600 mt-4 uppercase italic">3 Quotes Required</p></div>
+                    <div class="p-8 border-2 border-red-500 bg-red-50"><p class="text-[9px] font-black text-red-600 uppercase mb-3 font-bold">Level 4</p><p class="text-2xl font-black text-red-800">Over $5k</p><p class="text-[9px] font-bold text-red-600 mt-4 uppercase italic">FEMP Review</p></div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-black text-teal-800 uppercase mb-8 flex items-center gap-4">Services Procurement <span class="flex-1 h-[1px] bg-teal-100"></span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-left">
+                    <div class="p-8 border-2 border-slate-400 bg-slate-50"><p class="text-[9px] font-black text-slate-500 uppercase mb-3 font-bold">Level 1</p><p class="text-2xl font-black text-slate-800">$0 - $1k</p></div>
+                    <div class="p-8 border-2 border-teal-500 bg-teal-50"><p class="text-[9px] font-black text-teal-600 uppercase mb-3 font-bold">Level 2</p><p class="text-2xl font-black text-teal-800">$1k - $10k</p></div>
+                    <div class="p-8 border-2 border-indigo-500 bg-indigo-50"><p class="text-[9px] font-black text-indigo-600 uppercase mb-3 font-bold">Level 3</p><p class="text-2xl font-black text-indigo-800">Over $10k</p></div>
+                    <div class="flex items-center justify-center border-4 border-dotted border-gray-100 opacity-40 italic text-[9px] text-gray-300">FEMP Exempt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="form-tab" class="tab-content max-w-7xl mx-auto px-6 py-20">
+        <div class="text-left mb-10">
+            <h2 id="form-title" class="text-2xl font-nscc-title font-black mb-8 uppercase text-navy italic">New Request</h2>
+            <div id="level-indicator" class="flex gap-4 flex-wrap">
+                <div id="step-l1" class="px-8 py-3 border-4 border-gray-100 text-[9px] font-black uppercase opacity-20 transition-all">L1: Direct</div>
+                <div id="step-l2" class="px-8 py-3 border-4 border-gray-100 text-[9px] font-black uppercase opacity-20 transition-all">L2: DPO</div>
+                <div id="step-l3" class="px-8 py-3 border-4 border-gray-100 text-[9px] font-black uppercase opacity-20 transition-all">L3: 3-Quotes</div>
+                <div id="step-l4" class="px-8 py-3 border-4 border-gray-100 text-[9px] font-black uppercase opacity-20 transition-all">L4: FEMP</div>
+            </div>
+        </div>
+
+        <div class="bg-white border-2 border-gray-100 shadow-2xl mb-12 overflow-x-auto">
+            <table class="w-full border-collapse text-left min-w-[760px]">
+                <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b">
+                    <tr>
+                        <th class="p-4 pl-8">Description</th>
+                        <th class="p-4">Link</th>
+                        <th class="p-4">Vendor</th>
+                        <th class="p-4 w-24 text-center">Qty</th>
+                        <th class="p-4 text-right pr-6" style="width: 130px;">Price ($)</th>
+                        <th class="p-4 text-right pr-8 w-40 text-navy">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+            <button onclick="addNewRow()" class="w-full py-6 text-gray-300 hover:text-navy hover:bg-gray-50 transition font-black text-2xl border-t">+</button>
+        </div>
+
+        <div id="upload-zone" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 text-left"></div>
+
+        <div class="flex flex-col items-end gap-6 border-t pt-8">
+            <div class="w-full max-w-md">
+                <label class="text-[10px] font-black text-gray-400 uppercase mb-1 block italic text-left">Budget Code / Project # *</label>
+                <input type="text" id="budget-code" class="w-full p-4 border-2 border-gray-100 font-bold text-navy outline-navy uppercase italic">
+            </div>
+
+            <div class="w-full max-w-md">
+                <label class="text-[10px] font-black text-gray-400 uppercase mb-1 block italic text-left">Fee (optional)</label>
+                <input type="number" id="fee" value="0.00" step="0.01" oninput="calc()" class="w-full p-4 border-2 border-gray-100 font-bold text-navy outline-navy">
+            </div>
+
+            <div class="w-full max-w-md">
+                <label id="notes-label" class="text-[10px] font-black text-gray-400 uppercase mb-1 block italic text-left">Notes <span id="notes-required" class="text-red-500 hidden">(required when fee &gt; 0)</span></label>
+                <textarea id="notes" rows="2" class="w-full p-4 border-2 border-gray-100 font-bold text-navy outline-navy italic" placeholder="Explain the additional fee..."></textarea>
+            </div>
+
+            <div class="flex items-center gap-3 bg-blue-50/50 p-4 rounded border border-blue-100 w-full max-w-md">
+                <input type="checkbox" id="it-review-toggle" class="w-5 h-5 accent-navy cursor-pointer">
+                <label for="it-review-toggle" class="text-[11px] font-black text-navy uppercase cursor-pointer italic">Submit for IT Technical Review?</label>
+            </div>
+
+            <div class="flex items-center gap-3 bg-emerald-50/50 p-4 rounded border border-emerald-100 w-full max-w-md">
+                <input type="checkbox" id="export-excel-toggle" class="w-5 h-5 accent-emerald-600 cursor-pointer" checked>
+                <label for="export-excel-toggle" class="text-[11px] font-black text-emerald-800 uppercase italic">Export Excel upon submission?</label>
+            </div>
+
+            <div class="flex items-center gap-12 text-right flex-wrap justify-end">
+                <div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-1 italic">Pre-Tax (editable)</p>
+                    <input type="number" step="0.01" id="total-pretax-input" value="0.00" oninput="onTotalsEdited()" class="text-3xl font-black text-gray-400 w-48 text-right outline-none border-b-2 border-gray-100">
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-navy uppercase mb-1 italic">Total (Incl. 15% HST, editable)</p>
+                    <input type="number" step="0.01" id="total-taxed-input" value="0.00" class="text-5xl font-black text-navy w-72 text-right outline-none border-b-2 border-blue-100">
+                </div>
+            </div>
+            <button id="submit-btn" onclick="submitFinal()" class="bg-navy text-white px-24 py-6 font-bold hover:bg-black transition uppercase text-sm shadow-xl tracking-widest">Submit Request</button>
+        </div>
+    </div>
+
+    <section id="records-tab" class="tab-content py-20 max-w-7xl mx-auto px-6">
+        <h2 class="text-2xl font-nscc-title font-black mb-10 uppercase text-navy italic text-left">Submission Records</h2>
+        <div class="bg-white border-2 border-gray-100 shadow-sm overflow-x-auto text-left">
+            <table class="w-full border-collapse min-w-[720px]">
+                <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b">
+                    <tr><th class="p-6">Date</th><th class="p-6">ID</th><th class="p-6">Details</th><th class="p-6 text-right">Amount</th><th class="p-6 text-center">Status</th><th class="p-6 text-center">Action</th></tr>
+                </thead>
+                <tbody id="records-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <script src="js/api.js"></script>
+    <script>
+        let requestType = "";
+        let vendors = [];
+        let submissionHistory = [];
+        const config = { 'Goods': { l2: 1000, l3: 2500, l4: 5000 }, 'Services': { l2: 1000, l3: 10000, l4: null } };
+
+        async function loadVendors() {
+            try { vendors = await ARPS.getVendors(); } catch { vendors = []; }
+        }
+
+        function vendorOptions(selected) {
+            const opts = vendors.map(v => `<option value="${v.name}" ${v.name === selected ? 'selected' : ''}>${v.name}</option>`).join('');
+            return `<option value="">— select —</option>${opts}<option value="__other__">Other...</option>`;
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId + '-tab').classList.add('active');
+            if (tabId === 'records') renderRecords();
+            window.scrollTo(0, 0);
+        }
+
+        function initiateRequest(type) {
+            requestType = type;
+            document.getElementById('form-title').innerText = "New " + type + " Request";
+            document.getElementById('step-l4').style.display = (type === 'Services') ? 'none' : 'block';
+            showTab('form');
+            document.getElementById('table-body').innerHTML = "";
+            document.getElementById('fee').value = "0.00";
+            document.getElementById('notes').value = "";
+            document.getElementById('budget-code').value = "";
+            addNewRow();
+            calc();
+        }
+
+        function addNewRow() {
+            const tr = document.createElement('tr');
+            tr.className = "border-b item-row";
+            tr.innerHTML = `
+                <td class="p-4 pl-8"><input type="text" class="name w-full p-2 bg-gray-50 rounded font-bold text-sm"></td>
+                <td class="p-4"><input type="text" class="link w-full p-2 bg-gray-50 rounded text-blue-500 text-xs" placeholder="https://"></td>
+                <td class="p-4">
+                    <select class="vendor w-full p-2 bg-gray-50 rounded italic text-sm" onchange="onVendorChange(this)">${vendorOptions('')}</select>
+                    <input type="text" class="vendor-other w-full p-2 bg-gray-50 rounded italic text-sm mt-1 hidden" placeholder="Vendor name">
+                </td>
+                <td class="p-4 w-24 text-center"><input type="number" value="1" oninput="calc()" class="qty w-full p-2 bg-gray-50 rounded text-center font-black"></td>
+                <td class="p-4 text-right pr-6"><input type="number" value="0.00" step="0.01" oninput="calc()" class="price w-full p-2 bg-gray-50 rounded text-right font-bold text-navy"></td>
+                <td class="p-4 text-right pr-8"><input type="number" step="0.01" value="0.00" oninput="onSubtotalEdited()" class="subtotal w-32 p-2 bg-gray-50 rounded text-right font-black text-navy"></td>
+            `;
+            document.getElementById('table-body').appendChild(tr);
+        }
+
+        function onVendorChange(sel) {
+            const other = sel.parentElement.querySelector('.vendor-other');
+            if (sel.value === '__other__') { other.classList.remove('hidden'); other.focus(); }
+            else { other.classList.add('hidden'); }
+        }
+
+        function getVendorValue(row) {
+            const sel = row.querySelector('.vendor');
+            if (sel.value === '__other__') return row.querySelector('.vendor-other').value.trim();
+            return sel.value;
+        }
+
+        // qty * price -> subtotal, then roll up to totals
+        function calc() {
+            document.querySelectorAll('.item-row').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                row.querySelector('.subtotal').value = (qty * price).toFixed(2);
+            });
+            rollupTotals();
+        }
+
+        // user manually changed a subtotal -> recompute totals from subtotals
+        function onSubtotalEdited() { rollupTotals(); }
+
+        function rollupTotals() {
+            let preTax = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                preTax += parseFloat(row.querySelector('.subtotal').value) || 0;
+            });
+            const fee = parseFloat(document.getElementById('fee').value) || 0;
+            preTax += fee;
+            document.getElementById('total-pretax-input').value = preTax.toFixed(2);
+            document.getElementById('total-taxed-input').value = (preTax * 1.15).toFixed(2);
+            validateNotes();
+            updateWatermark(preTax);
+        }
+
+        // user manually edited pre-tax total -> refresh taxed + watermark
+        function onTotalsEdited() {
+            const preTax = parseFloat(document.getElementById('total-pretax-input').value) || 0;
+            document.getElementById('total-taxed-input').value = (preTax * 1.15).toFixed(2);
+            updateWatermark(preTax);
+        }
+
+        function validateNotes() {
+            const fee = parseFloat(document.getElementById('fee').value) || 0;
+            document.getElementById('notes-required').classList.toggle('hidden', fee <= 0);
+        }
+
+        function updateWatermark(val) {
+            const ids = ['step-l1', 'step-l2', 'step-l3', 'step-l4'];
+            const classes = ['lvl-1-active', 'lvl-2-active', 'lvl-3-active', 'lvl-4-active'];
+            const t = config[requestType] || config['Goods'];
+            ids.forEach((id, i) => document.getElementById(id).classList.remove(classes[i]));
+            let activeIndex = (t.l4 && val >= t.l4) ? 3 : (val >= t.l3) ? 2 : (val >= t.l2) ? 1 : 0;
+            document.getElementById(ids[activeIndex]).classList.add(classes[activeIndex]);
+
+            const zone = document.getElementById('upload-zone');
+            zone.innerHTML = "";
+            if (val >= t.l2) zone.innerHTML += `<div class="p-4 border-2 border-blue-400 bg-blue-50/10 text-[9px] font-black uppercase italic">DPO* <input type="file" data-doc="DPO" class="block mt-2 doc-file"></div>`;
+            if (val >= t.l3) zone.innerHTML += `<div class="p-4 border-2 border-amber-500 bg-amber-50/10 text-[9px] font-black uppercase italic">3 Quotes* <input type="file" data-doc="3 Quotes" class="block mt-2 doc-file"></div>`;
+            if (t.l4 && val >= t.l4) zone.innerHTML += `<div class="p-4 border-2 border-red-500 bg-red-50/10 text-[9px] font-black uppercase italic">FEMP Form* <input type="file" data-doc="FEMP" class="block mt-2 doc-file"></div>`;
+        }
+
+        function collectAttachments() {
+            const out = {};
+            document.querySelectorAll('.doc-file').forEach(input => {
+                const key = input.dataset.doc;
+                out[key] = (input.files && input.files[0]) ? input.files[0].name : '';
+            });
+            return out;
+        }
+
+        function exportToExcel(r) {
+            const wsData = [["ARPS Export", r.id], ["Budget", r.budgetCode], ["Type", r.type], ["Fee", r.fee], ["Notes", r.notes], ["Total", r.total], ["Status", r.status], ["Comment", r.comment], [], ["Item", "Vendor", "Qty", "Price", "Subtotal"]];
+            (r.items || []).forEach(i => wsData.push([i.name, i.vendor, i.qty, i.price, i.sub]));
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, "Order");
+            XLSX.writeFile(wb, `${r.id}.xlsx`);
+        }
+
+        async function submitFinal() {
+            const budget = document.getElementById('budget-code').value.trim();
+            if (!budget) return alert("Budget Code Required");
+
+            const fee = parseFloat(document.getElementById('fee').value) || 0;
+            const notes = document.getElementById('notes').value.trim();
+            if (fee > 0 && !notes) return alert("Notes are required when a fee is entered.");
+
+            const items = [];
+            document.querySelectorAll('.item-row').forEach(row => {
+                const name = row.querySelector('.name').value.trim();
+                if (!name) return;
+                items.push({
+                    name,
+                    vendor: getVendorValue(row),
+                    link: row.querySelector('.link').value.trim(),
+                    qty: row.querySelector('.qty').value,
+                    price: row.querySelector('.price').value,
+                    sub: '$' + (parseFloat(row.querySelector('.subtotal').value) || 0).toFixed(2)
+                });
+            });
+            if (items.length === 0) return alert("Add at least one item with a description.");
+
+            const payload = {
+                type: requestType,
+                budgetCode: budget,
+                items,
+                fee,
+                notes,
+                itReview: document.getElementById('it-review-toggle').checked,
+                attachments: collectAttachments(),
+                totalPretax: parseFloat(document.getElementById('total-pretax-input').value) || 0,
+                totalTaxed: parseFloat(document.getElementById('total-taxed-input').value) || 0
+            };
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.innerText = 'Submitting...';
+            try {
+                const record = await ARPS.createRequest(payload);
+                if (document.getElementById('export-excel-toggle').checked) exportToExcel(record);
+                await renderRecords();
+                showTab('records');
+            } catch (e) {
+                alert('Submission failed: ' + e.message);
+            } finally {
+                btn.disabled = false; btn.innerText = 'Submit Request';
+            }
+        }
+
+        async function renderRecords() {
+            try { submissionHistory = await ARPS.getRequests(); } catch { submissionHistory = []; }
+            const body = document.getElementById('records-body');
+            if (!submissionHistory.length) {
+                body.innerHTML = `<tr><td colspan="6" class="p-20 text-center text-gray-300 font-black uppercase text-xs italic">No submissions yet</td></tr>`;
+                return;
+            }
+            body.innerHTML = submissionHistory.map((r, i) => `
+                <tr class="border-b">
+                    <td class="p-6 text-xs text-gray-400">${r.date}</td>
+                    <td class="p-6 font-black text-navy">${r.id}</td>
+                    <td class="p-6">
+                        <span class="font-bold text-gray-500 text-xs">${r.budgetCode || ''}</span>
+                        ${r.notes ? `<div class="text-amber-600 text-[10px] font-bold mt-1 italic">Note: ${r.notes}</div>` : ''}
+                        ${r.comment ? `<div class="text-red-500 text-[10px] font-bold mt-1 uppercase italic">Review: ${r.comment}</div>` : ''}
+                    </td>
+                    <td class="p-6 text-right font-black text-navy">${r.total}</td>
+                    <td class="p-6 text-center"><span class="px-2 py-1 bg-blue-50 text-blue-600 text-[9px] font-black uppercase">${r.status}</span></td>
+                    <td class="p-6 text-center"><button onclick='exportToExcel(submissionHistory[${i}])' class="text-emerald-600 border p-1 text-[9px] font-black uppercase border-emerald-200 bg-emerald-50">Excel</button></td>
+                </tr>`).join('');
+        }
+
+        document.getElementById('fee').addEventListener('input', rollupTotals);
+        loadVendors();
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARPS | NSCC Vendor List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; }
+        .bg-navy { background-color: #003366; }
+        .text-navy { color: #003366; }
+    </style>
+</head>
+<body class="bg-white">
+
+    <nav class="border-b-4 border-navy sticky top-0 bg-white/95 backdrop-blur-sm z-50 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center flex-wrap gap-4">
+            <a href="index.html" class="flex flex-col cursor-pointer">
+                <span style="font-family: 'Montserrat', sans-serif;" class="text-2xl font-black text-navy leading-none tracking-tighter uppercase">Applied Research Procurement System</span>
+                <span class="text-[10px] font-bold text-gray-400 mt-2 tracking-[0.2em] uppercase">Sydney Waterfront Campus</span>
+            </a>
+            <div class="flex gap-3 text-[10px] font-black uppercase">
+                <a href="employee.html" class="px-4 py-2 border-2 border-navy text-navy hover:bg-navy hover:text-white transition tracking-widest">Back to Portal</a>
+                <a href="vendor-register.html" class="px-4 py-2 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white transition tracking-widest">Register Vendor</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-16">
+        <div class="mb-12 border-l-8 border-navy pl-8">
+            <h1 class="text-4xl font-black tracking-tighter text-navy mb-2 uppercase italic" style="font-family: 'Montserrat', sans-serif;">NSCC Vendor List</h1>
+            <p class="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px] italic">Approved suppliers &amp; negotiated discount rates</p>
+        </div>
+
+        <div class="bg-white border-2 border-gray-100 shadow-sm overflow-x-auto">
+            <table class="w-full text-left min-w-[640px]">
+                <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b">
+                    <tr>
+                        <th class="p-6">Vendor ID</th>
+                        <th class="p-6">Vendor Name</th>
+                        <th class="p-6">Products / Categories</th>
+                        <th class="p-6 text-center">Discount Rate</th>
+                        <th class="p-6 text-right">Onboarded</th>
+                    </tr>
+                </thead>
+                <tbody id="vendor-body">
+                    <tr><td colspan="5" class="p-20 text-center text-gray-300 font-black uppercase text-xs italic">Loading vendors...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function render() {
+            const body = document.getElementById('vendor-body');
+            let vendors = [];
+            try { vendors = await ARPS.getVendors(); } catch { vendors = []; }
+            if (!vendors.length) {
+                body.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-gray-300 font-black uppercase text-xs italic">No vendors registered yet</td></tr>`;
+                return;
+            }
+            body.innerHTML = vendors.map(v => `
+                <tr class="border-b hover:bg-gray-50 transition">
+                    <td class="p-6 font-black text-navy">${v.id}</td>
+                    <td class="p-6 font-bold text-navy uppercase">${v.name}</td>
+                    <td class="p-6 text-gray-500 text-sm italic">${v.products || '—'}</td>
+                    <td class="p-6 text-center"><span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-black">${v.discountRate || 'N/A'}</span></td>
+                    <td class="p-6 text-right text-[10px] font-bold text-gray-400">${v.createdAt || ''}</td>
+                </tr>`).join('');
+        }
+        render();
+    </script>
+</body>
+</html>

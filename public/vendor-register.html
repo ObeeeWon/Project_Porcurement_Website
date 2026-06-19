@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARPS | Vendor Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; }
+        .bg-navy { background-color: #003366; }
+        .text-navy { color: #003366; }
+    </style>
+</head>
+<body class="bg-white">
+
+    <nav class="border-b-4 border-navy sticky top-0 bg-white/95 backdrop-blur-sm z-50 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center flex-wrap gap-4">
+            <a href="index.html" class="flex flex-col cursor-pointer">
+                <span style="font-family: 'Montserrat', sans-serif;" class="text-2xl font-black text-navy leading-none tracking-tighter uppercase">Applied Research Procurement System</span>
+                <span class="text-[10px] font-bold text-gray-400 mt-2 tracking-[0.2em] uppercase">Sydney Waterfront Campus</span>
+            </a>
+            <div class="flex gap-3 text-[10px] font-black uppercase">
+                <a href="vendors.html" class="px-4 py-2 border-2 border-navy text-navy hover:bg-navy hover:text-white transition tracking-widest">NSCC Vendor List</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-6 py-16">
+        <div class="mb-12 border-l-8 border-emerald-600 pl-8">
+            <h1 class="text-4xl font-black tracking-tighter text-navy mb-2 uppercase italic" style="font-family: 'Montserrat', sans-serif;">Vendor Registration Form</h1>
+            <p class="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px] italic">Add a supplier to the NSCC approved list</p>
+        </div>
+
+        <div class="bg-white border-2 border-gray-100 shadow-2xl p-10 space-y-8">
+            <div>
+                <label class="text-[10px] font-black text-gray-400 uppercase mb-2 block italic">Vendor Name *</label>
+                <input type="text" id="v-name" value="Lenovo Canada" class="w-full p-4 border-2 border-gray-100 font-bold text-navy outline-navy">
+            </div>
+            <div>
+                <label class="text-[10px] font-black text-gray-400 uppercase mb-2 block italic">Products / Categories</label>
+                <input type="text" id="v-products" value="Laptops, workstations, docking stations" class="w-full p-4 border-2 border-gray-100 font-bold text-navy outline-navy">
+            </div>
+            <div>
+                <label class="text-[10px] font-black text-gray-400 uppercase mb-2 block italic">Discount Rate</label>
+                <input type="text" id="v-discount" value="10%" class="w-full p-4 border-2 border-gray-100 font-bold text-navy outline-navy">
+            </div>
+
+            <div id="msg" class="hidden text-sm font-bold"></div>
+
+            <button id="submit-btn" onclick="registerVendor()" class="bg-emerald-600 text-white px-16 py-5 font-bold hover:bg-emerald-700 transition uppercase text-sm shadow-xl tracking-widest">Register Vendor</button>
+        </div>
+
+        <div class="mt-12">
+            <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 italic">Currently Registered (Demo Data)</h2>
+            <div id="vendor-preview" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function renderPreview() {
+            const wrap = document.getElementById('vendor-preview');
+            let vendors = [];
+            try { vendors = await ARPS.getVendors(); } catch { vendors = []; }
+            wrap.innerHTML = vendors.map(v => `
+                <div class="p-5 border-2 border-gray-100 bg-gray-50">
+                    <p class="text-[9px] font-black text-gray-400 uppercase">${v.id}</p>
+                    <p class="font-black text-navy uppercase mt-1">${v.name}</p>
+                    <p class="text-[11px] text-gray-500 italic mt-1">${v.products || '—'}</p>
+                    <p class="text-[10px] font-black text-emerald-700 mt-2">Discount: ${v.discountRate || 'N/A'}</p>
+                </div>`).join('');
+        }
+
+        async function registerVendor() {
+            const name = document.getElementById('v-name').value.trim();
+            const msg = document.getElementById('msg');
+            if (!name) {
+                msg.className = 'text-sm font-bold text-red-500';
+                msg.textContent = 'Vendor name is required.';
+                msg.classList.remove('hidden');
+                return;
+            }
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.textContent = 'Registering...';
+            try {
+                const v = await ARPS.createVendor({
+                    name,
+                    products: document.getElementById('v-products').value.trim(),
+                    discountRate: document.getElementById('v-discount').value.trim()
+                });
+                msg.className = 'text-sm font-bold text-emerald-600';
+                msg.textContent = `Vendor ${v.name} registered as ${v.id}.`;
+                msg.classList.remove('hidden');
+                await renderPreview();
+            } catch (e) {
+                msg.className = 'text-sm font-bold text-red-500';
+                msg.textContent = 'Registration failed: ' + e.message;
+                msg.classList.remove('hidden');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Register Vendor';
+            }
+        }
+        renderPreview();
+    </script>
+</body>
+</html>
